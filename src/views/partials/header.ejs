@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · NP App</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand"><span class="brand-mark">◆</span> NP App</a>
+    <nav>
+      <% if (isAuthenticated) { %>
+        <form action="/logout" method="POST" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="link-btn">Log out</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Log in</a>
+        <a href="/register" class="nav-cta">Sign up</a>
+      <% } %>
+    </nav>
+  </header>
+  <main class="container">
+    <% if (flash) { %>
+      <div class="alert alert-<%= flash.type %>" role="alert"><%= flash.message %></div>
+    <% } %>

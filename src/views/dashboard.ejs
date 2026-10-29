@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+<section class="card card-wide">
+  <h1>Welcome, <%= user.name %></h1>
+  <p class="subtitle">You are logged in. This page is only visible to authenticated users.</p>
+  <dl class="details">
+    <div><dt>Name</dt><dd><%= user.name %></dd></div>
+    <div><dt>Email</dt><dd><%= user.email %></dd></div>
+    <div><dt>Member since</dt><dd><%= new Date(user.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) %></dd></div>
+  </dl>
+  <form action="/logout" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-outline">Log out</button>
+  </form>
+</section>
+<%- include('partials/footer') %>

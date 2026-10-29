@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+<section class="card">
+  <h1>Create your account</h1>
+  <p class="subtitle">It takes less than a minute.</p>
+
+  <% if (errors.form) { %>
+    <div class="alert alert-error" role="alert"><%= errors.form %></div>
+  <% } %>
+
+  <form action="/register" method="POST" novalidate data-validate="register">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="field <%= errors.name ? 'has-error' : '' %>">
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" autocomplete="name" maxlength="50"
+             value="<%= values.name || '' %>" required>
+      <small class="error-msg" data-for="name"><%= errors.name || '' %></small>
+    </div>
+
+    <div class="field <%= errors.email ? 'has-error' : '' %>">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" maxlength="254"
+             value="<%= values.email || '' %>" required>
+      <small class="error-msg" data-for="email"><%= errors.email || '' %></small>
+    </div>
+
+    <div class="field <%= errors.password ? 'has-error' : '' %>">
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input id="password" name="password" type="password" autocomplete="new-password" maxlength="72" required>
+        <button type="button" class="toggle-pw" aria-label="Show password">Show</button>
+      </div>
+      <ul class="pw-rules" aria-live="polite">
+        <li data-rule="length">8+ characters</li>
+        <li data-rule="lower">Lowercase</li>
+        <li data-rule="upper">Uppercase</li>
+        <li data-rule="digit">Number</li>
+        <li data-rule="special">Special character</li>
+      </ul>
+      <small class="error-msg" data-for="password"><%= errors.password || '' %></small>
+    </div>
+
+    <div class="field <%= errors.confirmPassword ? 'has-error' : '' %>">
+      <label for="confirmPassword">Confirm password</label>
+      <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required>
+      <small class="error-msg" data-for="confirmPassword"><%= errors.confirmPassword || '' %></small>
+    </div>
+
+    <button type="submit" class="btn">Create account</button>
+  </form>
+  <p class="switch">Already have an account? <a href="/login">Log in</a></p>
+</section>
+<%- include('partials/footer') %>
