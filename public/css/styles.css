@@ -51,8 +51,8 @@ a { color: var(--primary); }
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
-.brand { font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
-.brand-mark { color: var(--primary); }
+.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
+.brand-mark { color: var(--primary); flex-shrink: 0; }
 .topbar nav { display: flex; gap: 16px; align-items: center; }
 .topbar nav a { text-decoration: none; font-weight: 500; }
 .nav-cta { background: var(--primary); color: #fff !important; padding: 6px 14px; border-radius: 8px; }

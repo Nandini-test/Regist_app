@@ -8,7 +8,15 @@
 </head>
 <body>
   <header class="topbar">
-    <a href="/" class="brand"><span class="brand-mark">◆</span> NP App</a>
+    <a href="/" class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+      NP App
+    </a>
     <nav>
       <% if (isAuthenticated) { %>
         <form action="/logout" method="POST" class="inline">
