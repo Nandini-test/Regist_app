@@ -1,7 +1,11 @@
 <%- include('partials/header') %>
 <section class="card card-wide">
   <h1>Welcome, <%= user.name %></h1>
-  <p class="subtitle">You are logged in. This page is only visible to authenticated users.</p>
+  <p class="subtitle">Hungry? Fresh starters and sweets are waiting for you. 😋</p>
+  <div class="actions">
+    <a href="/menu" class="btn">Browse the menu</a>
+    <a href="/orders" class="btn btn-outline">My orders (<%= orderCount %>)</a>
+  </div>
   <dl class="details">
     <div><dt>Name</dt><dd><%= user.name %></dd></div>
     <div><dt>Email</dt><dd><%= user.email %></dd></div>

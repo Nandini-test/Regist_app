@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+<section class="card card-wide">
+  <h1>My orders</h1>
+  <% if (!list.length) { %>
+    <p class="subtitle">You haven't ordered yet.</p>
+    <a href="/menu" class="btn">Browse the menu</a>
+  <% } else { %>
+    <ul class="order-list">
+      <% list.forEach((o) => { %>
+        <li>
+          <a href="/orders/<%= o.id %>" class="order-row">
+            <div>
+              <strong><%= o.id %></strong>
+              <small><%= formatDate(o.date) %> · <%= o.slot %> · <%= o.items.map((i) => `${i.name} × ${i.qty}`).join(', ') %></small>
+            </div>
+            <div class="order-right">
+              <span class="status status-<%= o.status %>"><%= STATUSES[o.status] %></span>
+              <span><%= rupees(o.total) %></span>
+            </div>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

@@ -22,6 +22,95 @@
     });
   });
 
+  // Checkout: hide the address box when "Pickup" is chosen
+  const addressField = document.getElementById('address-field');
+  document.querySelectorAll('input[name="fulfilment"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (addressField) addressField.hidden = radio.value === 'pickup' && radio.checked;
+    });
+  });
+
+  // Menu: photo galleries (prev / next buttons + "1 / 3" counter)
+  document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+    const track = gallery.querySelector('.gallery-track');
+    const count = gallery.querySelector('[data-gallery-count]');
+    const total = track.children.length;
+    const go = (step) => track.scrollBy({ left: step * track.clientWidth, behavior: 'smooth' });
+    const prev = gallery.querySelector('.prev');
+    const next = gallery.querySelector('.next');
+    if (prev) prev.addEventListener('click', () => go(-1));
+    if (next) next.addEventListener('click', () => go(1));
+    if (count) {
+      track.addEventListener('scroll', () => {
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        count.textContent = `${Math.min(index + 1, total)} / ${total}`;
+      });
+    }
+  });
+
+  // Menu (admin): description letter counter and photo limit check
+  document.querySelectorAll('form[data-edit-dish]').forEach((editForm) => {
+    const textarea = editForm.querySelector('[data-counter]');
+    const counter = editForm.querySelector('[data-count]');
+    textarea.addEventListener('input', () => { counter.textContent = textarea.value.length; });
+
+    const max = Number(editForm.dataset.maxPhotos);
+    const photos = editForm.querySelector('[data-photos]');
+    const photoError = editForm.querySelector('[data-photo-error]');
+    const checkPhotos = () => {
+      const kept = Number(photos.dataset.current) - editForm.querySelectorAll('[data-remove]:checked').length;
+      const files = Array.from(photos.files);
+      let message = '';
+      if (kept + files.length > max) {
+        message = kept
+          ? `Max ${max} photos per dish: you can add ${Math.max(max - kept, 0)} more, or tick photos to remove.`
+          : `You can upload at most ${max} photos per dish.`;
+      } else if (files.some((f) => f.size > 2 * 1024 * 1024)) {
+        message = 'Each photo must be 2 MB or smaller.';
+      }
+      photos.setCustomValidity(message);
+      photoError.textContent = message;
+      return !message;
+    };
+    // Small previews of the chosen photos next to the image icon
+    const previews = editForm.querySelector('[data-previews]');
+    const badge = editForm.querySelector('[data-photo-count]');
+    const emptyHint = previews.innerHTML;
+    const showPreviews = () => {
+      previews.querySelectorAll('img').forEach((img) => URL.revokeObjectURL(img.src));
+      const files = Array.from(photos.files);
+      previews.innerHTML = files.length ? '' : emptyHint;
+      files.forEach((file) => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+        previews.appendChild(img);
+      });
+      badge.hidden = !files.length;
+      badge.textContent = files.length;
+    };
+
+    photos.addEventListener('change', () => {
+      showPreviews();
+      checkPhotos();
+    });
+    editForm.querySelectorAll('[data-remove]').forEach((box) => box.addEventListener('change', checkPhotos));
+    editForm.addEventListener('submit', (e) => {
+      if (!checkPhotos()) e.preventDefault();
+    });
+  });
+
+  // Ask before destructive actions (e.g. deleting a dish)
+  document.querySelectorAll('form[data-confirm]').forEach((f) => {
+    f.addEventListener('submit', (e) => {
+      if (!window.confirm(f.dataset.confirm)) e.preventDefault();
+    });
+  });
+
+  // A rejected "Add new dish" form reopens: scroll it into view
+  const openAdd = document.querySelector('.add-dish[open]');
+  if (openAdd) openAdd.scrollIntoView({ block: 'center' });
+
   const form = document.querySelector('form[data-validate]');
   if (!form) return;
   const mode = form.dataset.validate;

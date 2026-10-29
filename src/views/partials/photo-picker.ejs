@@ -1,0 +1,21 @@
+<%# Image-icon photo picker: opens the file chooser (computer) or gallery/camera (phone).
+    Params: id, current (photos the dish already has), error %>
+<div class="photo-picker">
+  <label for="<%= id %>" class="photo-btn" title="Add photos (up to <%= MAX_PHOTOS %>, max 2 MB each)">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </svg>
+    <span class="sr-only">Add photos</span>
+    <span class="photo-count" data-photo-count hidden></span>
+  </label>
+  <input type="file" id="<%= id %>" name="photos" multiple class="sr-only"
+         accept="image/jpeg,image/png,image/webp,image/gif" data-photos data-current="<%= current %>">
+  <div class="photo-previews" data-previews>
+    <% const room = MAX_PHOTOS - current; %>
+    <span class="hint"><%= room > 0 ? `Up to ${room} photo${room === 1 ? '' : 's'}` : 'Tick a photo above to replace it' %></span>
+  </div>
+</div>
+<p class="error-msg" data-photo-error role="alert"><%= error || '' %></p>

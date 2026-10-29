@@ -1,0 +1,160 @@
+<%- include('partials/header') %>
+<section class="hero">
+  <h1>Homemade with love 😋</h1>
+  <p>Fresh non-veg starters and sweets, cooked to order in a home kitchen.
+     Pre-order for evening delivery or pickup — same-day orders close at <%= settings.sameDayCutoffHour % 12 %> PM.</p>
+  <nav class="chips" aria-label="Menu sections">
+    <% categories.forEach((c) => { %>
+      <a class="chip" href="#cat-<%= c.id %>"><%= c.emoji %> <%= c.name %></a>
+    <% }) %>
+  </nav>
+</section>
+
+<% categories.forEach((c) => { %>
+  <section class="menu-section" id="cat-<%= c.id %>">
+    <h2><%= c.emoji %> <%= c.name %></h2>
+    <div class="menu-grid">
+      <% items.filter((i) => i.category === c.id).forEach((item) => { %>
+        <article class="dish<%= item.images.length ? ' has-photo' : '' %>" id="<%= item.id %>">
+          <div class="dish-art">
+            <% if (item.images.length) { %>
+              <div class="gallery" data-gallery>
+                <div class="gallery-track">
+                  <% item.images.forEach((src, i) => { %>
+                    <img src="<%= src %>" alt="<%= item.name %>, photo <%= i + 1 %> of <%= item.images.length %>" loading="lazy">
+                  <% }) %>
+                </div>
+                <% if (item.images.length > 1) { %>
+                  <button type="button" class="gallery-btn prev" aria-label="Previous photo">‹</button>
+                  <button type="button" class="gallery-btn next" aria-label="Next photo">›</button>
+                  <span class="gallery-count" data-gallery-count>1 / <%= item.images.length %></span>
+                <% } %>
+              </div>
+            <% } else { %>
+              <span aria-hidden="true"><%= item.emoji %></span>
+            <% } %>
+          </div>
+          <div class="dish-body">
+            <div class="dish-head">
+              <h3>
+                <span class="food-mark <%= item.nonVeg ? 'nonveg' : 'veg' %>" title="<%= item.nonVeg ? 'Non-veg' : 'Veg' %>"></span>
+                <%= item.name %>
+              </h3>
+              <span class="price"><%= rupees(item.price) %></span>
+            </div>
+            <p class="unit"><%= item.unit %><% if (item.weekendOnly) { %> · <span class="tag">Weekends only</span><% } %></p>
+            <p class="desc"><%= item.description %></p>
+            <form action="/cart/add" method="POST" class="add-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="itemId" value="<%= item.id %>">
+              <button type="submit" class="btn btn-small">
+                <%= inCart[item.id] ? `Add another (${inCart[item.id]} in cart)` : 'Add to cart' %>
+              </button>
+            </form>
+            <% if (isAdmin) { %>
+              <details class="dish-edit">
+                <summary>✏️ Edit</summary>
+                <form action="/menu/<%= item.id %>/edit" method="POST" enctype="multipart/form-data"
+                      class="edit-form" data-edit-dish data-max-photos="<%= MAX_PHOTOS %>">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <% if (item.photoFiles.length) { %>
+                    <fieldset class="thumbs">
+                      <legend>Current photos (tick to remove)</legend>
+                      <% item.photoFiles.forEach((file, i) => { %>
+                        <label class="thumb">
+                          <img src="/uploads/<%= file %>" alt="Photo <%= i + 1 %>">
+                          <span><input type="checkbox" name="remove" value="<%= file %>" data-remove> Remove</span>
+                        </label>
+                      <% }) %>
+                    </fieldset>
+                  <% } %>
+                  <div class="field">
+                    <label for="desc-<%= item.id %>" class="sr-only">Short description (max <%= MAX_DESCRIPTION %> letters)</label>
+                    <textarea id="desc-<%= item.id %>" name="description" rows="2" maxlength="<%= MAX_DESCRIPTION %>"
+                              placeholder="Short description" data-counter><%= item.description %></textarea>
+                    <p class="hint char-count"><span data-count><%= item.description.length %></span>/<%= MAX_DESCRIPTION %></p>
+                  </div>
+                  <div class="form-foot">
+                    <%- include('partials/photo-picker', { id: `photos-${item.id}`, current: item.photoFiles.length, error: '' }) %>
+                    <button type="submit" class="btn btn-small">Save</button>
+                  </div>
+                </form>
+                <% if (item.custom) { %>
+                  <form action="/menu/<%= item.id %>/delete" method="POST" class="delete-dish"
+                        data-confirm="Delete <%= item.name %> from the menu?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-small btn-danger">🗑 Delete this dish</button>
+                  </form>
+                <% } %>
+              </details>
+            <% } %>
+          </div>
+        </article>
+      <% }) %>
+
+      <% if (isAdmin) { %>
+        <%
+          const failed = newDish && (newDish.values.category === c.id || (!newDish.values.category && c === categories[0]));
+          const v = failed ? newDish.values : {};
+          const e = failed ? newDish.errors : {};
+          const fid = (name) => `new-${c.id}-${name}`;
+        %>
+        <details class="dish add-dish" id="add-<%= c.id %>"<%= failed ? ' open' : '' %>>
+          <summary>
+            <span class="add-plus" aria-hidden="true">＋</span>
+            Add new dish to <%= c.name %>
+          </summary>
+          <form action="/menu/new" method="POST" enctype="multipart/form-data" class="edit-form"
+                data-edit-dish data-max-photos="<%= MAX_PHOTOS %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="category" value="<%= c.id %>">
+            <% if (e.category) { %><p class="error-msg"><%= e.category %></p><% } %>
+
+            <%# Compact form: placeholders instead of big labels (labels kept for screen readers) %>
+            <div class="field<%= e.name ? ' has-error' : '' %>">
+              <label for="<%= fid('name') %>" class="sr-only">Dish name</label>
+              <input type="text" id="<%= fid('name') %>" name="name" maxlength="40" required
+                     placeholder="Dish name" value="<%= v.name || '' %>">
+              <% if (e.name) { %><span class="error-msg"><%= e.name %></span><% } %>
+            </div>
+            <div class="field-row compact-row">
+              <div class="field<%= e.price ? ' has-error' : '' %>">
+                <label for="<%= fid('price') %>" class="sr-only">Price in rupees</label>
+                <input type="number" id="<%= fid('price') %>" name="price" min="1" max="10000" step="1" required
+                       inputmode="numeric" placeholder="Price ₹" value="<%= v.price || '' %>">
+                <% if (e.price) { %><span class="error-msg"><%= e.price %></span><% } %>
+              </div>
+              <div class="field<%= e.unit ? ' has-error' : '' %>">
+                <label for="<%= fid('unit') %>" class="sr-only">Portion (optional)</label>
+                <input type="text" id="<%= fid('unit') %>" name="unit" maxlength="30"
+                       placeholder="Portion (optional)" value="<%= v.unit || '' %>">
+                <% if (e.unit) { %><span class="error-msg"><%= e.unit %></span><% } %>
+              </div>
+            </div>
+            <div class="field<%= e.description ? ' has-error' : '' %>">
+              <label for="<%= fid('description') %>" class="sr-only">Short description (max <%= MAX_DESCRIPTION %> letters)</label>
+              <textarea id="<%= fid('description') %>" name="description" rows="2" maxlength="<%= MAX_DESCRIPTION %>"
+                        required placeholder="Short description" data-counter><%= v.description || '' %></textarea>
+              <p class="hint char-count"><span data-count><%= (v.description || '').length %></span>/<%= MAX_DESCRIPTION %></p>
+              <% if (e.description) { %><span class="error-msg"><%= e.description %></span><% } %>
+            </div>
+            <label class="check">
+              <input type="checkbox" name="nonVeg"<%= (failed ? v.nonVeg : c.id === 'starters') ? ' checked' : '' %>>
+              Non-veg
+            </label>
+            <div class="form-foot">
+              <%- include('partials/photo-picker', { id: fid('photos'), current: 0, error: e.photos }) %>
+              <button type="submit" class="btn btn-small">Add dish</button>
+            </div>
+          </form>
+        </details>
+      <% } %>
+    </div>
+  </section>
+<% }) %>
+
+<% if (cartCount) { %>
+  <a href="/cart" class="floating-cart">🛒 View cart (<%= cartCount %>)</a>
+<% } %>
+<script src="/js/lightbox.js"></script>
+<%- include('partials/footer') %>

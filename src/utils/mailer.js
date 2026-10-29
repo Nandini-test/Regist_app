@@ -35,7 +35,7 @@ async function sendPasswordResetEmail(to, name, link) {
   await transporter.sendMail({
     from: process.env.MAIL_FROM || process.env.SMTP_USER,
     to,
-    subject: 'Reset your NP App password',
+    subject: 'Reset your Happy Yummy password',
     text:
       `Hi ${name},\n\nWe received a request to reset your password.\n` +
       `Open this link to choose a new one (valid for 30 minutes):\n${link}\n\n` +

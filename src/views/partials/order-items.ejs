@@ -1,0 +1,10 @@
+<ul class="mini-list">
+  <% order.items.forEach((i) => { %>
+    <li><span><%= i.name %> × <%= i.qty %></span><span><%= rupees(i.lineTotal) %></span></li>
+  <% }) %>
+</ul>
+<dl class="totals">
+  <div><dt>Subtotal</dt><dd><%= rupees(order.subtotal) %></dd></div>
+  <div><dt>Delivery</dt><dd><%= order.deliveryFee ? rupees(order.deliveryFee) : 'Free' %></dd></div>
+  <div class="grand"><dt>Total</dt><dd><%= rupees(order.total) %></dd></div>
+</dl>

@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+<section class="card card-wide">
+  <h1>Your cart 🛒</h1>
+  <% if (!summary.count) { %>
+    <p class="subtitle">Your cart is empty. Let's fix that!</p>
+    <a href="/menu" class="btn">Browse the menu</a>
+  <% } else { %>
+    <ul class="cart-list">
+      <% summary.lines.forEach((l) => { %>
+        <li class="cart-line">
+          <span class="cart-emoji" aria-hidden="true"><%= l.item.emoji %></span>
+          <div class="cart-info">
+            <strong><%= l.item.name %></strong>
+            <small><%= rupees(l.item.price) %> · <%= l.item.unit %><% if (l.item.weekendOnly) { %> · Weekends only<% } %></small>
+          </div>
+          <form action="/cart/update" method="POST" class="qty-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="itemId" value="<%= l.item.id %>">
+            <button type="submit" name="qty" value="<%= l.qty - 1 %>" class="qty-btn" aria-label="Decrease <%= l.item.name %>">−</button>
+            <span class="qty" aria-label="Quantity"><%= l.qty %></span>
+            <button type="submit" name="qty" value="<%= l.qty + 1 %>" class="qty-btn" aria-label="Increase <%= l.item.name %>"
+              <%= l.qty >= settings.maxQtyPerItem ? 'disabled' : '' %>>+</button>
+          </form>
+          <span class="line-total"><%= rupees(l.lineTotal) %></span>
+        </li>
+      <% }) %>
+    </ul>
+
+    <dl class="totals">
+      <div><dt>Subtotal</dt><dd><%= rupees(summary.subtotal) %></dd></div>
+      <div><dt>Delivery</dt><dd><%= summary.deliveryFee ? rupees(summary.deliveryFee) : 'Free' %></dd></div>
+      <div class="grand"><dt>Total</dt><dd><%= rupees(summary.total) %></dd></div>
+    </dl>
+    <p class="hint">
+      <% if (summary.deliveryFee) { %>
+        Add <%= rupees(settings.freeDeliveryAbove - summary.subtotal) %> more for free delivery.
+      <% } else { %>
+        🎉 You get free delivery!
+      <% } %>
+      Pickup is always free.
+    </p>
+
+    <div class="actions">
+      <a href="/menu" class="btn btn-outline">Add more items</a>
+      <a href="/checkout" class="btn">Checkout</a>
+    </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

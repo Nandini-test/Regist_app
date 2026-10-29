@@ -1,0 +1,102 @@
+<%- include('partials/header') %>
+<div class="checkout-layout">
+  <section class="card">
+    <h1>Checkout</h1>
+    <p class="subtitle">Ordering as <strong><%= user.name %></strong> (<%= user.email %>)</p>
+
+    <% if (errors.schedule) { %>
+      <div class="alert alert-error" role="alert"><%= errors.schedule %></div>
+    <% } %>
+
+    <form action="/checkout" method="POST" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <fieldset class="field">
+        <legend>How do you want it?</legend>
+        <div class="choice-row">
+          <label class="choice">
+            <input type="radio" name="fulfilment" value="delivery" <%= values.fulfilment === 'delivery' ? 'checked' : '' %>>
+            🛵 Home delivery
+          </label>
+          <label class="choice">
+            <input type="radio" name="fulfilment" value="pickup" <%= values.fulfilment === 'pickup' ? 'checked' : '' %>>
+            🏠 Pickup
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="field <%= errors.phone ? 'has-error' : '' %>">
+        <label for="phone">Mobile number</label>
+        <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14"
+               placeholder="10-digit mobile number" value="<%= values.phone || '' %>" required>
+        <small class="error-msg"><%= errors.phone || '' %></small>
+      </div>
+
+      <div class="field <%= errors.address ? 'has-error' : '' %>" id="address-field"
+           <%= values.fulfilment === 'pickup' ? 'hidden' : '' %>>
+        <label for="address">Delivery address</label>
+        <textarea id="address" name="address" rows="3" maxlength="300"
+                  placeholder="House no., street, area, landmark"><%= values.address || '' %></textarea>
+        <small class="error-msg"><%= errors.address || '' %></small>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="date">Date</label>
+          <select id="date" name="date" required>
+            <% dates.forEach((d) => { %>
+              <option value="<%= d.value %>" <%= values.date === d.value ? 'selected' : '' %>><%= d.label %><%= d.weekend ? ' 🎉' : '' %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="field">
+          <label for="slot">Time</label>
+          <select id="slot" name="slot" required>
+            <% settings.slots.forEach((s) => { %>
+              <option value="<%= s %>" <%= values.slot === s ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <fieldset class="field <%= errors.payment ? 'has-error' : '' %>">
+        <legend>Payment (pay when you receive your order)</legend>
+        <div class="choice-row">
+          <label class="choice">
+            <input type="radio" name="payment" value="upi" <%= values.payment === 'upi' ? 'checked' : '' %>> 📱 UPI
+          </label>
+          <label class="choice">
+            <input type="radio" name="payment" value="cash" <%= values.payment === 'cash' ? 'checked' : '' %>> 💵 Cash
+          </label>
+        </div>
+        <small class="error-msg"><%= errors.payment || '' %></small>
+      </fieldset>
+
+      <div class="field <%= errors.notes ? 'has-error' : '' %>">
+        <label for="notes">Notes for the kitchen <span class="optional">(optional)</span></label>
+        <textarea id="notes" name="notes" rows="2" maxlength="300"
+                  placeholder="e.g. less spicy, no onions"><%= values.notes || '' %></textarea>
+        <small class="error-msg"><%= errors.notes || '' %></small>
+      </div>
+
+      <button type="submit" class="btn">Place order · <%= rupees(summary.total) %></button>
+    </form>
+  </section>
+
+  <aside class="card summary-card">
+    <h2>Order summary</h2>
+    <ul class="mini-list">
+      <% summary.lines.forEach((l) => { %>
+        <li><span><%= l.item.emoji %> <%= l.item.name %> × <%= l.qty %></span><span><%= rupees(l.lineTotal) %></span></li>
+      <% }) %>
+    </ul>
+    <dl class="totals">
+      <div><dt>Subtotal</dt><dd><%= rupees(summary.subtotal) %></dd></div>
+      <div><dt>Delivery</dt><dd><%= summary.deliveryFee ? rupees(summary.deliveryFee) : 'Free' %></dd></div>
+      <div class="grand"><dt>Total</dt><dd><%= rupees(summary.total) %></dd></div>
+    </dl>
+    <p class="hint">Delivery is free above <%= rupees(settings.freeDeliveryAbove) %>; pickup is always free. Total updates when you place the order.</p>
+    <a href="/cart" class="small-link">← Edit cart</a>
+  </aside>
+</div>
+<%- include('partials/footer') %>

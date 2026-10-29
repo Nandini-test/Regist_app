@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+<section class="kitchen">
+  <div class="kitchen-head">
+    <h1>Kitchen 👩‍🍳</h1>
+    <nav class="chips">
+      <a class="chip <%= show === 'active' ? 'chip-on' : '' %>" href="/kitchen">Active orders</a>
+      <a class="chip <%= show === 'all' ? 'chip-on' : '' %>" href="/kitchen?show=all">All orders</a>
+    </nav>
+  </div>
+
+  <% if (!list.length) { %>
+    <div class="card"><p class="subtitle">No <%= show === 'active' ? 'active ' : '' %>orders right now.</p></div>
+  <% } %>
+
+  <div class="kitchen-grid">
+    <% list.forEach((o) => { %>
+      <article class="card kitchen-card">
+        <div class="kitchen-card-head">
+          <strong><%= o.id %></strong>
+          <span class="status status-<%= o.status %>"><%= STATUSES[o.status] %></span>
+        </div>
+        <p class="when"><%= o.fulfilment === 'delivery' ? '🛵' : '🏠' %> <%= formatDate(o.date) %> · <%= o.slot %></p>
+        <p class="who">
+          <%= o.customer.name %> · <a href="tel:<%= o.customer.phone %>"><%= o.customer.phone %></a><br>
+          <% if (o.fulfilment === 'delivery') { %><small><%= o.address %></small><% } else { %><small>Pickup</small><% } %>
+        </p>
+        <%- include('partials/order-items', { order: o }) %>
+        <p class="pay"><%= o.payment === 'upi' ? '📱 UPI' : '💵 Cash' %> on delivery</p>
+        <% if (o.notes) { %><p class="notes">📝 <%= o.notes %></p><% } %>
+        <form action="/kitchen/orders/<%= o.id %>/status" method="POST" class="status-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="sr-only" for="status-<%= o.id %>">Status</label>
+          <select id="status-<%= o.id %>" name="status">
+            <% Object.entries(STATUSES).forEach(([key, label]) => { %>
+              <option value="<%= key %>" <%= o.status === key ? 'selected' : '' %>><%= label %></option>
+            <% }) %>
+          </select>
+          <button type="submit" class="btn btn-small">Update</button>
+        </form>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<%- include('partials/footer') %>

@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+<% const steps = ['received', 'preparing', 'ready', 'delivered'];
+   const current = steps.indexOf(order.status); %>
+<section class="card card-wide">
+  <p class="eyebrow">Order <%= order.id %></p>
+  <h1><%= order.status === 'cancelled' ? 'Order cancelled' : order.status === 'delivered' ? 'Enjoy your food! 😋' : 'Thank you for your order! 😋' %></h1>
+  <p class="subtitle">
+    <%= order.fulfilment === 'delivery' ? '🛵 Delivery' : '🏠 Pickup' %> on
+    <strong><%= formatDate(order.date) %></strong>, <strong><%= order.slot %></strong>
+  </p>
+
+  <% if (order.status !== 'cancelled') { %>
+    <ol class="tracker">
+      <% steps.forEach((s, i) => { %>
+        <li class="<%= i < current ? 'done' : i === current ? 'current' : '' %>">
+          <%= s === 'ready' ? (order.fulfilment === 'delivery' ? 'Out for delivery' : 'Ready for pickup') : STATUSES[s] %>
+        </li>
+      <% }) %>
+    </ol>
+  <% } else { %>
+    <div class="alert alert-error">This order was cancelled.</div>
+  <% } %>
+
+  <%- include('partials/order-items', { order }) %>
+
+  <dl class="details">
+    <div><dt>Phone</dt><dd><%= order.customer.phone %></dd></div>
+    <% if (order.fulfilment === 'delivery') { %>
+      <div><dt>Address</dt><dd><%= order.address %></dd></div>
+    <% } %>
+    <div><dt>Payment</dt><dd><%= order.payment === 'upi' ? 'UPI on delivery' : 'Cash on delivery' %></dd></div>
+    <% if (order.notes) { %><div><dt>Notes</dt><dd><%= order.notes %></dd></div><% } %>
+  </dl>
+
+  <div class="actions">
+    <a href="/orders" class="btn btn-outline">All my orders</a>
+    <% if (order.status === 'received') { %>
+      <form action="/orders/<%= order.id %>/cancel" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-danger">Cancel order</button>
+      </form>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>

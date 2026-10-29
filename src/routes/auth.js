@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const users = require('../models/userStore');
+const orders = require('../models/orderStore');
 const crypto = require('crypto');
 const {
   validateRegistration,
@@ -31,7 +32,7 @@ const authLimiter = rateLimit({
     }),
 });
 
-router.get('/', (req, res) => res.redirect(req.session.userId ? '/dashboard' : '/login'));
+router.get('/', (req, res) => res.redirect('/menu'));
 
 // ---------- Registration ----------
 router.get('/register', redirectIfAuthenticated, (req, res) => {
@@ -92,11 +93,17 @@ router.post('/login', authLimiter, redirectIfAuthenticated, async (req, res, nex
       });
     }
 
+    // Keep the cart and the page they were heading to (e.g. checkout) across login.
+    const { cart } = req.session;
+    const returnTo = req.session.returnTo;
+    const safeReturn = typeof returnTo === 'string' && /^\/(?!\/)/.test(returnTo) ? returnTo : '/dashboard';
+
     // Prevent session fixation: issue a fresh session ID on login.
     return req.session.regenerate((err) => {
       if (err) return next(err);
       req.session.userId = user.id;
-      return res.redirect('/dashboard');
+      if (cart) req.session.cart = cart;
+      return res.redirect(safeReturn);
     });
   } catch (err) {
     return next(err);
@@ -187,8 +194,9 @@ router.get('/dashboard', requireAuth, (req, res) => {
     return req.session.destroy(() => res.redirect('/login'));
   }
   return res.render('dashboard', {
-    title: 'Dashboard',
+    title: 'My account',
     user: { name: user.name, email: user.email, createdAt: user.createdAt },
+    orderCount: orders.findByUser(user.id).length,
   });
 });
 
@@ -196,7 +204,7 @@ router.post('/logout', (req, res, next) => {
   req.session.destroy((err) => {
     if (err) return next(err);
     res.clearCookie('sid');
-    return res.redirect('/login');
+    return res.redirect('/menu');
   });
 });
 

@@ -3,33 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title %> · NP App</title>
+  <title><%= title %> · Happy Yummy</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😋</text></svg>">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <header class="topbar">
-    <a href="/" class="brand">
-      <svg class="brand-mark" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="2" y="3" width="20" height="14" rx="2"/>
-        <line x1="8" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
-      NP App
+    <a href="/menu" class="brand">
+      <span class="brand-mark" aria-hidden="true">😋</span>
+      Happy Yummy
     </a>
+    <%
+      const isActive = (base) => currentPath === base || currentPath.startsWith(base + '/');
+      const navLink = (base) => isActive(base) ? 'class="nav-link active" aria-current="page"' : 'class="nav-link"';
+    %>
     <nav>
+      <a href="/menu" <%- navLink('/menu') %>>Menu</a>
+      <a href="/cart" <%- navLink('/cart') %>>Cart<% if (cartCount) { %> <span class="badge"><%= cartCount %></span><% } %></a>
       <% if (isAuthenticated) { %>
+        <a href="/orders" <%- navLink('/orders') %>>My orders</a>
+        <% if (isAdmin) { %><a href="/kitchen" <%- navLink('/kitchen') %>>Kitchen</a><% } %>
+        <a href="/dashboard" <%- navLink('/dashboard') %>>Account</a>
         <form action="/logout" method="POST" class="inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="link-btn">Log out</button>
+          <button type="submit" class="nav-link nav-logout">Log out</button>
         </form>
       <% } else { %>
-        <a href="/login">Log in</a>
+        <a href="/login" <%- navLink('/login') %>>Log in</a>
         <a href="/register" class="nav-cta">Sign up</a>
       <% } %>
     </nav>
   </header>
-  <main class="container">
+  <main class="container<%= wide ? ' container-wide' : '' %>">
     <% if (flash) { %>
       <div class="alert alert-<%= flash.type %>" role="alert"><%= flash.message %></div>
     <% } %>

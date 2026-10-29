@@ -1,5 +1,5 @@
 {
-  "name": "np-app",
+  "name": "happy-yummy",
   "version": "1.0.0",
   "description": "Registration and login web app with Express, bcrypt and sessions",
   "main": "src/server.js",
@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "node --test"
+    "test": "node --test --test-concurrency=1"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,7 @@
     "express-rate-limit": "^8.7.1",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
+    "multer": "^2.5.0",
     "nodemailer": "^10.3.0"
   },
   "devDependencies": {
